@@ -1,11 +1,7 @@
 package ee.taltech.inbankbackend.service;
 
-import com.github.vladislavgoltjajev.personalcode.locale.estonia.EstonianPersonalCodeValidator;
 import ee.taltech.inbankbackend.config.DecisionEngineConstants;
-import ee.taltech.inbankbackend.exceptions.InvalidLoanAmountException;
-import ee.taltech.inbankbackend.exceptions.InvalidLoanPeriodException;
-import ee.taltech.inbankbackend.exceptions.InvalidPersonalCodeException;
-import ee.taltech.inbankbackend.exceptions.NoValidLoanException;
+import ee.taltech.inbankbackend.exceptions.*;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class DecisionEngine {
 
     // Used to check for the validity of the presented ID code.
-    private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
+    private final DecisionEngineAgeRestrictions validator = new DecisionEngineAgeRestrictions();
     private int creditModifier = 0;
 
     /**
@@ -37,7 +33,7 @@ public class DecisionEngine {
      */
     public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
-            NoValidLoanException {
+            NoValidLoanException, InvalidAgeException {
         try {
             verifyInputs(personalCode, loanAmount, loanPeriod);
         } catch (Exception e) {
@@ -71,6 +67,16 @@ public class DecisionEngine {
      */
     private int highestValidLoanAmount(int loanPeriod) {
         return creditModifier * loanPeriod;
+    }
+
+    /**
+     * Calculates the credit score using algorithm credit score = (credit modifier / loan amount) * loan period
+     * @Param loanPeriod
+     * @Param loanAmount
+     * @return credit score in double form
+     */
+    private double creditScore(Long loanAmount, int loanPeriod){
+        return (double) creditModifier / loanAmount * loanPeriod;
     }
 
     /**
