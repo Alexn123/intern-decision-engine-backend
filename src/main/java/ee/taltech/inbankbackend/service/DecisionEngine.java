@@ -1,5 +1,6 @@
 package ee.taltech.inbankbackend.service;
 
+import com.github.vladislavgoltjajev.personalcode.exception.PersonalCodeException;
 import ee.taltech.inbankbackend.config.DecisionEngineConstants;
 import ee.taltech.inbankbackend.exceptions.*;
 import org.springframework.stereotype.Service;
@@ -115,7 +116,7 @@ public class DecisionEngine {
      * @throws InvalidLoanPeriodException If the requested loan period is invalid
      */
     private void verifyInputs(String personalCode, Long loanAmount, int loanPeriod)
-            throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException {
+            throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException, InvalidAgeException, PersonalCodeException {
 
         if (!validator.isValid(personalCode)) {
             throw new InvalidPersonalCodeException("Invalid personal ID code!");
@@ -128,6 +129,10 @@ public class DecisionEngine {
                 || !(loanPeriod <= DecisionEngineConstants.MAXIMUM_LOAN_PERIOD)) {
             throw new InvalidLoanPeriodException("Invalid loan period!");
         }
+
+        if (!validator.ageRestrictions(personalCode)){
+            throw new InvalidAgeException("age restriction applied, invalid loan");
+        };
 
     }
 }
